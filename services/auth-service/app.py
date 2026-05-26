@@ -7,6 +7,7 @@ import os
 from app.config.db import db, DATABASE_URI
 from app.models.user_model import User
 from app.routes.auth_routes import auth_bp
+from datetime import timedelta
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_identity,

@@ -4,6 +4,7 @@ import json
 from app.config.redis_client import redis_client
 from app.config.db import db
 from app.models.product_model import Product
+from app.utils.kafka_producer import publish_product_created_event
 
 product_bp = Blueprint('products', __name__)
 
@@ -25,6 +26,10 @@ def create_product():
     db.session.commit()
 
     redis_client.delete('all_products')
+
+    publish_product_created_event(
+    product.to_dict()
+    )
 
     return jsonify({
         "message": "Product created successfully",
