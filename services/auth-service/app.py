@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
+
 import os
 
 from app.config.db import db, DATABASE_URI
 from app.models.user_model import User
+from app.routes.auth_routes import auth_bp
 
 load_dotenv()
 
@@ -16,6 +18,7 @@ app.config['JWT_SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
 
 db.init_app(app)
 jwt = JWTManager(app)
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
 @app.route('/')
 def home():
