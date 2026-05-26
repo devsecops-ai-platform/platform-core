@@ -7,6 +7,11 @@ import os
 from app.config.db import db, DATABASE_URI
 from app.models.user_model import User
 from app.routes.auth_routes import auth_bp
+from flask_jwt_extended import (
+    jwt_required,
+    get_jwt_identity,
+    get_jwt
+)
 
 load_dotenv()
 
@@ -25,6 +30,22 @@ def home():
     return {
         "service": "auth-service",
         "status": "running"
+    }
+
+@app.route('/protected')
+@jwt_required()
+def protected():
+
+    current_user_id = get_jwt_identity()
+    claims = get_jwt()
+
+    return {
+        "message": "Protected route accessed",
+        "user": {
+            "id": current_user_id,
+            "email": claims.get("email"),
+            "role": claims.get("role")
+        }
     }
 
 with app.app_context():
