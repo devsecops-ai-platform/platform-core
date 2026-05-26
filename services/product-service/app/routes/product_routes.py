@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
-
+import json
+from app.config.redis_client import redis_client
 from app.config.db import db
 from app.models.product_model import Product
 
@@ -23,6 +24,8 @@ def create_product():
     db.session.add(product)
     db.session.commit()
 
+    redis_client.delete('all_products')
+
     return jsonify({
         "message": "Product created successfully",
         "product": product.to_dict()
@@ -32,12 +35,25 @@ def create_product():
 @product_bp.route('/products', methods=['GET'])
 def get_products():
 
+    cached_products = redis_client.get('all_products')
+
+    if cached_products:
+        return jsonify(json.loads(cached_products))
+
     products = Product.query.all()
 
-    return jsonify([
+    product_list = [
         product.to_dict()
         for product in products
-    ])
+    ]
+
+    redis_client.set(
+        'all_products',
+        json.dumps(product_list),
+        ex=60
+    )
+
+    return jsonify(product_list)
 
 
 @product_bp.route('/products/<int:product_id>', methods=['GET'])
